@@ -23,7 +23,7 @@ IMAGE=quay.io/monax/compilers
 
 set -e
 
-if [ "$JENKINS_URL" ] || [ "$CIRCLE_BRANCH" ]
+if [ "$CIRCLE_BRANCH" ]
 then
   REPO=`pwd`
   CI="true"
@@ -39,18 +39,11 @@ mkdir -p $REPO/target/docker
 docker build -t $IMAGE:build $REPO
 docker run --rm --entrypoint cat $IMAGE:build /usr/local/bin/$TARGET > $REPO/target/docker/"$TARGET"_build_artifact
 docker run --rm --entrypoint cat $IMAGE:build /usr/local/bin/solc > $REPO/target/docker/solc
-docker build -t $IMAGE:$release_min -f Dockerfile.deploy $REPO
+docker build -t $IMAGE:$release_maj -f Dockerfile.deploy $REPO
 
-
-# If provided, tag the image with the label provided
-if [ "$1" ]
-then
-  docker tag $IMAGE:$release_min $IMAGE:$1
-  docker rmi $IMAGE:$release_min
-fi
 
 # Cleanup
 rm $REPO/target/docker/"$TARGET"_build_artifact
 rm $REPO/target/docker/solc
-# docker rmi -f $IMAGE:build
+docker rmi -f $IMAGE:build
 
